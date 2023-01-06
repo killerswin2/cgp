@@ -25,18 +25,6 @@ GLuint createShaderProgram()
     shader vShader{"shaders/vertexShaderSimple.glsl", GL_VERTEX_SHADER};
     shader fShader{"shaders/fragmentShaderSimple.glsl", GL_FRAGMENT_SHADER};
 
-    //const char * vShaderChar = vShaderSource.data();
-    //const char * fShaderChar = fShaderSource.data();
-
-    //GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-    //GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-
-    //GLuint vfProgram = glCreateProgram();
-    //glAttachShader(vfProgram, vShader.getShader());
-    //glAttachShader(vfProgram, fShader.getShader());
-    //glLinkProgram(vfProgram);
-
     program glProgram;
     glProgram.pushBackShader(vShader);
     glProgram.pushBackShader(fShader);
