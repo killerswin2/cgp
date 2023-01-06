@@ -1,10 +1,6 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <filesystem>
 #include "debug/messageDebugger.h"
 #include "shader/shader.h"
 #include "glProgram/glProgram.h"
@@ -18,10 +14,6 @@ GLuint vao[numVAOs];
 
 GLuint createShaderProgram() 
 {
-    GLuint vShaderCompiled;
-    GLuint fShaderCompiled;
-    GLuint shaderLinked;
-
     shader vShader{"shaders/vertexShaderSimple.glsl", GL_VERTEX_SHADER};
     shader fShader{"shaders/fragmentShaderSimple.glsl", GL_FRAGMENT_SHADER};
 
@@ -89,5 +81,4 @@ int main()
     glfwDestroyWindow(window);
     glfwTerminate();
     exit(EXIT_SUCCESS);
-
 }
