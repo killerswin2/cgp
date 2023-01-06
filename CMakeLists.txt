@@ -11,7 +11,10 @@ add_subdirectory(dependencies/glfw)
 add_subdirectory(dependencies/glm)
 add_subdirectory(dependencies/SOIL2)
 
-add_executable(CGP src/main.cpp)
+file(GLOB_RECURSE SOURCES_DEBUG "src/debug/*.hpp" "src/debug/*.cpp")
+file(GLOB_RECURSE SOURCES_SHADER "src/shader/*.hpp" "src/shader/*.cpp")
+
+add_executable(CGP src/main.cpp ${SOURCES_DEBUG} ${SOURCES_SHADER})
 
 target_include_directories(CGP 
 PUBLIC dependencies/glew/include
