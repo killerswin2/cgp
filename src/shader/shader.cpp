@@ -8,9 +8,7 @@ shader::shader(std::filesystem::path filepath, GLenum shaderType) : m_filePath{f
 void shader::createShader()
 {
     //if (checkOpenGLError()) {std::cerr << "before shader create\n";printShaderLog(m_shader);}
-    std::cerr << "before m_shader value: " << m_shader << "\n";
     m_shader = glCreateShader(m_shaderType);
-    std::cerr << "after m_shader value: " << m_shader << "\n";
     //if (checkOpenGLError()) {std::cerr << "After shader create\n";printShaderLog(m_shader);}
 
     std::ifstream in(m_filePath);

@@ -7,6 +7,7 @@
 #include <filesystem>
 #include "debug/messageDebugger.h"
 #include "shader/shader.h"
+#include "glProgram/glProgram.h"
 
 
 #define numVAOs 1
@@ -31,11 +32,17 @@ GLuint createShaderProgram()
     //GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
 
 
-    GLuint vfProgram = glCreateProgram();
-    glAttachShader(vfProgram, vShader.getShader());
-    glAttachShader(vfProgram, fShader.getShader());
-    glLinkProgram(vfProgram);
+    //GLuint vfProgram = glCreateProgram();
+    //glAttachShader(vfProgram, vShader.getShader());
+    //glAttachShader(vfProgram, fShader.getShader());
+    //glLinkProgram(vfProgram);
 
+    program glProgram;
+    glProgram.pushBackShader(vShader);
+    glProgram.pushBackShader(fShader);
+    glProgram.attachShaders();
+
+    GLuint vfProgram = glProgram.getGLProgram();
     return vfProgram;
 
 }

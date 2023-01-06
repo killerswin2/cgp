@@ -13,8 +13,9 @@ add_subdirectory(dependencies/SOIL2)
 
 file(GLOB_RECURSE SOURCES_DEBUG "src/debug/*.hpp" "src/debug/*.cpp")
 file(GLOB_RECURSE SOURCES_SHADER "src/shader/*.hpp" "src/shader/*.cpp")
+file(GLOB_RECURSE SOURCES_PROGRAM "src/glProgram/*.hpp" "src/glProgram/*.cpp")
 
-add_executable(CGP src/main.cpp ${SOURCES_DEBUG} ${SOURCES_SHADER})
+add_executable(CGP src/main.cpp ${SOURCES_DEBUG} ${SOURCES_SHADER} ${SOURCES_PROGRAM})
 
 target_include_directories(CGP 
 PUBLIC dependencies/glew/include
