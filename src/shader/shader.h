@@ -9,6 +9,12 @@
 #include <fstream>
 #include "../debug/messageDebugger.h"
 
+/**
+ * @brief Abstraction of opengl shader
+ * 
+ * This class abstracts away most of the opengl shader functions needed for basic creation.
+ * Creates and compiles shaders for later use with program
+ */
 class shader
 {
     private:

@@ -30,6 +30,14 @@ GLuint createShaderProgram()
 
 }
 
+/**
+ * @brief opengl "init" function
+ * 
+ * This function creates the rendering program from opengl 
+ * and generates and binds the vertexArrays
+ * 
+ * @param window pointer to glfw windows that has the opengl context
+ */
 void init(GLFWwindow* window) 
 {
     renderingProgram = createShaderProgram();
@@ -38,6 +46,14 @@ void init(GLFWwindow* window)
 
 };
 
+/**
+ * @brief render function
+ * 
+ * This function repeated draws the info to screen. 
+ * 
+ * @param window glfw window with opengl context
+ * @param currentTime time since window init
+ */
 void display(GLFWwindow* window, double currentTime)
 {
     glClear(GL_DEPTH_BUFFER_BIT);
