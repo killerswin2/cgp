@@ -8,13 +8,25 @@
 
 #define numVAOs 1
 
+//gl stuff
+
 GLuint renderingProgram;
 GLuint vao[numVAOs];
 
+// animation helpers
+
 static float xPos = 0.0f;
-static float posInc = 0.01f;
+static float posInc = 0.5f;
 
+// timers
 
+static double frameTimeLast = 0.0;
+
+/**
+ * @brief Create a Shader Program object
+ * 
+ * @return GLuint 
+ */
 GLuint createShaderProgram() 
 {
     shader vShader{"shaders/vertexShaderSimple.glsl", GL_VERTEX_SHADER};
@@ -56,19 +68,25 @@ void init(GLFWwindow* window)
  */
 void display(GLFWwindow* window, double currentTime)
 {
+    // calculate deltaTime;
+
+    double deltaTime = currentTime - frameTimeLast;     // (final - init)
+    frameTimeLast = currentTime;
+
+
     glClear(GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0, 0.0,0.0,1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(renderingProgram);
 
-    xPos += posInc;
+    xPos += (posInc * deltaTime);
     if (xPos > 1.0f) 
     {
-        posInc = -0.01f;
+        posInc = -0.5f;
     }
     if (xPos < -1.0f) 
     {
-        posInc = 0.01f;
+        posInc = 0.5f;
     }
 
     //uniforms
