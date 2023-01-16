@@ -3,6 +3,7 @@
 #include <gl/glew.h>
 #include <vector>
 #include "../shader/shader.h"
+#include "../debug/messageDebugger.h"
 
 class program
 {
@@ -11,7 +12,7 @@ class program
         std::vector<shader> m_shaders;
 
     public:
-        program(){m_program = glCreateProgram();};
+        program(){GLCall(m_program = glCreateProgram());};
         void linkProgram();
         void pushBackShader(shader glShader);
         void attachShaders();

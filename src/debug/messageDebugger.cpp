@@ -100,7 +100,6 @@ void APIENTRY debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum
 
 void printShaderLog(GLuint shader)
 {
-    std::cerr << shader << "\n";
     GLint shaderType = 0;
     glGetShaderiv(shader, GL_SHADER_TYPE, &shaderType);
     std::string shaderTypeName;
@@ -128,7 +127,7 @@ void printShaderLog(GLuint shader)
     }
 
 
-    std::cerr << "Type of Shader: " << shaderType << "\n";
+    std::cerr << "Type of Shader: " << shaderTypeName << "\n";
     int length = 0;
     int chWrittenToLog = 0;
     char *log;
@@ -169,4 +168,20 @@ bool checkOpenGLError()
         glError = glGetError();
     }
     return foundError;
+}
+
+void GLClearError()
+{
+    while (glGetError() != GL_NO_ERROR);
+}
+
+bool GLLogCall(const char* function, const char* file, int line)
+{
+    while (GLenum error = glGetError())
+    {
+        std::cerr << " [OpenGL_Error] (" << error << ") " << function <<
+            " " << file << ":" << line << std::endl;
+        return false;
+    }
+    return true;
 }

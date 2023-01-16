@@ -1,17 +1,27 @@
 #include <iostream>
+#include <string>
+#include <cmath>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "debug/messageDebugger.h"
 #include "shader/shader.h"
 #include "glProgram/glProgram.h"
 
 
 #define numVAOs 1
+#define numVBOs 2
 
 //gl stuff
 
+float cameraX, cameraY, cameraZ;
+float cubePosX, cubePosY, cubePosZ;
+
 GLuint renderingProgram;
 GLuint vao[numVAOs];
+GLuint vbo[numVBOs];
 
 // animation helpers
 
@@ -21,6 +31,42 @@ static float posInc = 0.5f;
 // timers
 
 static double frameTimeLast = 0.0;
+
+// display helpers
+
+GLuint mvLoc, projLoc;
+int width, height;
+float aspect;
+glm::mat4 pMat, vMat, mMat, mvMat;
+
+
+void setUpVertices(void)
+{
+    float vertexPositions[108] = {
+        -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0,
+        -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
+        1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0,
+        1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0,
+        1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0,
+        1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0,
+        -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0,
+        -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0,
+        -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0,
+        -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0,
+        1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0, -1.0, -1.0,
+        1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, -1.0
+    };
+
+    GLCall(glGenVertexArrays(1, vao));
+    GLCall(glBindVertexArray(vao[0]));
+    GLCall(glGenBuffers(numVBOs, vbo));
+
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW));
+
+}
+
+
 
 /**
  * @brief Create a Shader Program object
@@ -38,6 +84,7 @@ GLuint createShaderProgram()
     glProgram.attachShaders();
 
     GLuint vfProgram = glProgram.getGLProgram();
+    std::cout << "Program value: " << vfProgram << "\n";
     return vfProgram;
 
 }
@@ -53,8 +100,14 @@ GLuint createShaderProgram()
 void init(GLFWwindow* window) 
 {
     renderingProgram = createShaderProgram();
-    glGenVertexArrays(numVAOs, vao);
-    glBindVertexArray(vao[0]);
+    cameraX = 0.0f;
+    cameraY = 0.0f;
+    cameraZ = 8.0f;
+
+    cubePosX = 0.0f;
+    cubePosY = -2.0f;
+    cubePosZ = 0.0f;
+    setUpVertices();
 
 };
 
@@ -74,26 +127,36 @@ void display(GLFWwindow* window, double currentTime)
     frameTimeLast = currentTime;
 
 
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0, 0.0,0.0,1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glUseProgram(renderingProgram);
+    GLCall(glClear(GL_DEPTH_BUFFER_BIT));
+    GLCall(glUseProgram(renderingProgram));
 
-    xPos += (posInc * deltaTime);
-    if (xPos > 1.0f) 
-    {
-        posInc = -0.5f;
-    }
-    if (xPos < -1.0f) 
-    {
-        posInc = 0.5f;
-    }
+    // get uniform locations
+    GLCall(mvLoc = glGetUniformLocation(renderingProgram, "mv_matrix"));
+    GLCall(projLoc = glGetUniformLocation(renderingProgram, "proj_matrix"));
 
-    //uniforms
-    GLuint offsetLocation = glGetUniformLocation(renderingProgram, "offset");
-    glProgramUniform1f(renderingProgram, offsetLocation, xPos);
+    //build perspective matrix
+    glfwGetFramebufferSize(window, &height, &width);
+    aspect = (float) width / (float) height;
+    pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    // model, view and model-view matrix
+    vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
+    mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubePosX, cubePosY, cubePosZ));
+    mvMat = vMat * mMat;
+
+    // copyPerspective and MV matrices to uniforms
+    GLCall(glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat)));
+    GLCall(glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat)));
+
+    // associate VBO with vertex attribute in shader
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
+    GLCall(glEnableVertexAttribArray(0));
+
+    // adjust opengl settings
+    GLCall(glEnable(GL_DEPTH_TEST));
+    GLCall(glDepthFunc(GL_LEQUAL));
+    GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));
 }
 
 int main()
@@ -114,9 +177,9 @@ int main()
     if(glewInit() != GLEW_OK) {exit(EXIT_FAILURE);}
 
 
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(debugMessageCallback, nullptr);
+    GLCall(glEnable(GL_DEBUG_OUTPUT));
+    GLCall(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+    GLCall(glDebugMessageCallback(debugMessageCallback, nullptr));
 
     //turn of v-sync
     glfwSwapInterval(1);

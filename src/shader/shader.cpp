@@ -7,9 +7,7 @@ shader::shader(std::filesystem::path filepath, GLenum shaderType) : m_filePath{f
 }
 void shader::createShader()
 {
-    //if (checkOpenGLError()) {std::cerr << "before shader create\n";printShaderLog(m_shader);}
-    m_shader = glCreateShader(m_shaderType);
-    //if (checkOpenGLError()) {std::cerr << "After shader create\n";printShaderLog(m_shader);}
+    GLCall(m_shader = glCreateShader(m_shaderType));
 
     std::ifstream in(m_filePath);
     std::string shader{};
@@ -21,11 +19,16 @@ void shader::createShader()
     }
     m_shaderData = shader;
     const char* shaderCharData = shader.data();
-    //if (checkOpenGLError()) {std::cerr << "Before shader source\n";printShaderLog(m_shader);}
     glShaderSource(m_shader, 1, &shaderCharData , NULL);
-    //if (checkOpenGLError()) {std::cerr << "After shader source\n";printShaderLog(m_shader);}
     glCompileShader(m_shader);
-    //if (checkOpenGLError()) {std::cerr << "After shader compile\n";printShaderLog(m_shader);}
+
+    int result;
+    glGetShaderiv(m_shader, GL_COMPILE_STATUS, &result);
+
+    if(result == GL_FALSE)
+    {
+        printShaderLog(m_shader);
+    }   
 }
 
 const char* shader::shaderData()
