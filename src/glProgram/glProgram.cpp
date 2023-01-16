@@ -3,10 +3,26 @@
 
 void program::linkProgram()
 {
+    // link and check link for success
+    GLint result;
     GLCall(glLinkProgram(m_program));
-    printProgramLog(m_program);
+    glGetProgramiv(m_program, GL_LINK_STATUS, &result);
+
+    if (result == GL_FALSE)
+    {
+        printProgramLog(m_program);
+    }
+
+    // validate the program before we try to run it
+    result = GL_TRUE;
     GLCall(glValidateProgram(m_program)); // check to see if the shaders can execute in the opengl state.
-    printProgramLog(m_program);
+    glGetProgramiv(m_program, GL_VALIDATE_STATUS, &result);
+
+    if(result == GL_FALSE)
+    {
+        printProgramLog(m_program);
+    }
+    
     // free the memory on the gpu?
     deleteShaders();
 }
