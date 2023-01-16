@@ -17,6 +17,7 @@ class program
         void pushBackShader(shader glShader);
         void attachShaders();
         GLuint getGLProgram() {return m_program;}
+        void deleteShaders();
 
 };
 #endif

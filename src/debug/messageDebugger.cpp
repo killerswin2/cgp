@@ -101,7 +101,7 @@ void APIENTRY debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum
 void printShaderLog(GLuint shader)
 {
     GLint shaderType = 0;
-    glGetShaderiv(shader, GL_SHADER_TYPE, &shaderType);
+    GLCall(glGetShaderiv(shader, GL_SHADER_TYPE, &shaderType));
     std::string shaderTypeName;
 
     switch (shaderType)
@@ -131,11 +131,11 @@ void printShaderLog(GLuint shader)
     int length = 0;
     int chWrittenToLog = 0;
     char *log;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    GLCall(glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length));
     if (length > 0 ) 
     {
         log = new char[length];
-        glGetShaderInfoLog(shader, length, &chWrittenToLog, log);
+        GLCall(glGetShaderInfoLog(shader, length, &chWrittenToLog, log));
         std::cerr << "Shader Info log: " << log << "\n";
         delete log;
     }
@@ -146,11 +146,11 @@ void printProgramLog(GLuint program)
     int length = 0;
     int chWrittenToLog = 0;
     char *log;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+    GLCall(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length));
     if(length > 0)
     {
         log = new char[length];
-        glGetShaderInfoLog(program, length, &chWrittenToLog, log);
+        GLCall(glGetProgramInfoLog(program, length, &chWrittenToLog, log));
         std::cerr << "Program Info log: " << log << "\n";
         delete log;
     }

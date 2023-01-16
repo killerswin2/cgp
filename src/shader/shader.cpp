@@ -28,6 +28,7 @@ void shader::createShader()
     if(result == GL_FALSE)
     {
         printShaderLog(m_shader);
+        GLCall(glDeleteShader(m_shader));
     }   
 }
 

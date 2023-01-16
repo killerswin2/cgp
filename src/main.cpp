@@ -84,7 +84,6 @@ GLuint createShaderProgram()
     glProgram.attachShaders();
 
     GLuint vfProgram = glProgram.getGLProgram();
-    std::cout << "Program value: " << vfProgram << "\n";
     return vfProgram;
 
 }
