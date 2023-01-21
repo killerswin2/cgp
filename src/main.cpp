@@ -177,7 +177,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
     //make window
-    GLFWwindow* window = glfwCreateWindow(600, 600, "Chapter2 - program1", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(600, 600, "Opengl Stuff Window", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
     //init glew
