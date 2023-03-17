@@ -34,10 +34,11 @@ static double frameTimeLast = 0.0;
 
 // display helpers
 
-GLuint mvLoc, projLoc;
-int width, height;
-float aspect;
-glm::mat4 pMat, vMat, mMat, mvMat, tMat, rMat;
+static GLuint vLoc, projLoc, tfLoc;
+static int width, height;
+static float aspect;
+static glm::mat4 pMat, vMat, mMat;
+
 
 
 void setUpVertices(void)
@@ -101,7 +102,7 @@ void init(GLFWwindow* window)
     renderingProgram = createShaderProgram();
     cameraX = 0.0f;
     cameraY = 0.0f;
-    cameraZ = 30.0f;
+    cameraZ = 1000.0f;
 
     cubePosX = 0.0f;
     cubePosY = -2.0f;
@@ -131,7 +132,8 @@ void display(GLFWwindow* window, double currentTime)
     GLCall(glUseProgram(renderingProgram));
 
     // get uniform locations
-    GLCall(mvLoc = glGetUniformLocation(renderingProgram, "mv_matrix"));
+    GLCall(tfLoc = glGetUniformLocation(renderingProgram, "timeFactor"));
+    GLCall(vLoc = glGetUniformLocation(renderingProgram, "v_matrix"));
     GLCall(projLoc = glGetUniformLocation(renderingProgram, "proj_matrix"));
 
     //build perspective matrix
@@ -144,32 +146,20 @@ void display(GLFWwindow* window, double currentTime)
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
     mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubePosX, cubePosY, cubePosZ));
 
-    for (int i = 0; i < 24; i++)
-    {
-        float timeFactor = currentTime + i;
-        //rotation and movement
-        tMat = glm::translate(glm::mat4(1.0f), glm::vec3(sin(0.35f * timeFactor)* 8.0f, cos(0.52f * timeFactor) * 8.0f, sin(0.7 * timeFactor) * 8.0f));
-        rMat = glm::rotate(glm::mat4(1.0f), 1.75f * (float)currentTime, glm::vec3(0.0f, 1.0f, 0.0f));
-        rMat = glm::rotate(rMat,1.75f * (float)currentTime, glm::vec3(1.0f, 0.0f, 0.0f));
-        rMat = glm::rotate(rMat,1.75f * (float)currentTime, glm::vec3(0.0f, 0.0f, 1.0f));
-        mMat = tMat * rMat;
-        mvMat = vMat * mMat;
+    float timeFactor = (float)currentTime;
+    // copyPerspective and MV matrices to uniforms
+    GLCall(glUniform1f(tfLoc, (float)timeFactor));
+    GLCall(glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(vMat)));
+    GLCall(glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat)));
+    // associate VBO with vertex attribute in shader
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
+    GLCall(glEnableVertexAttribArray(0));
+    // adjust opengl settings
+    GLCall(glEnable(GL_DEPTH_TEST));
+    GLCall(glDepthFunc(GL_LEQUAL));
+    GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 100000));
 
-        // copyPerspective and MV matrices to uniforms
-        GLCall(glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat)));
-        GLCall(glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat)));
-
-        // associate VBO with vertex attribute in shader
-        GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
-        GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
-        GLCall(glEnableVertexAttribArray(0));
-
-        // adjust opengl settings
-        GLCall(glEnable(GL_DEPTH_TEST));
-        GLCall(glDepthFunc(GL_LEQUAL));
-        GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));
-
-    }
 }
 
 int main()
