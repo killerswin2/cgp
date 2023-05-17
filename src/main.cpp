@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <stack>
 #include <cmath>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -32,7 +33,7 @@ static float posInc = 0.5f;
 static double frameTimeLast = 0.0;
 
 // display helpers
-
+static std::stack<glm::mat4> mvStack;
 static int width, height;
 static float aspect;
 static glm::mat4 pMat, vMat, mMat, mvMat;
@@ -95,7 +96,7 @@ void init(GLFWwindow* window)
 {
     cameraX = 0.0f;
     cameraY = 0.0f;
-    cameraZ = 10.0f;
+    cameraZ = 12.0f;
 
     cubePosX = 0.0f;
     cubePosY = -2.0f;
@@ -118,7 +119,6 @@ void init(GLFWwindow* window)
  */
 void display(GLFWwindow* window, double currentTime, shader& Shader)
 {
-    GLuint renderingProgram = Shader.getGLProgram();
     // calculate deltaTime;
     double deltaTime = currentTime - frameTimeLast;     // (final - init)
     frameTimeLast = currentTime;
@@ -129,7 +129,6 @@ void display(GLFWwindow* window, double currentTime, shader& Shader)
     Shader.useProgram();
 
 
-
     //build perspective matrix
     glfwGetFramebufferSize(window, &height, &width);
     aspect = (float) width / (float) height;
@@ -138,30 +137,17 @@ void display(GLFWwindow* window, double currentTime, shader& Shader)
 
     // model, view and model-view matrix
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
-    mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubePosX, cubePosY, cubePosZ));
-    mvMat = vMat * mMat;
+    // push view matrix
+    mvStack.push(vMat);
+
+    // pyramid stack
+    mvStack.push(mvStack.top());
+    mvStack.top() *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));      // sum position
+    mvStack.push(mvStack.top());
+    mvStack.top() *= glm::rotate(glm::mat4(1.0f),float(currentTime), glm::vec3(1.0f,0.0f,0.0f));    // sun rotation
 
     // copyPerspective and MV matrices to uniforms
-    Shader.setUniformMat4f("mv_matrix", mvMat);
-    Shader.setUniformMat4f("proj_matrix", pMat);
-
-
-    // associate VBO with vertex attribute in shader
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
-    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
-    GLCall(glEnableVertexAttribArray(0));
-
-    // adjust opengl settings
-    GLCall(glEnable(GL_DEPTH_TEST));
-    GLCall(glDepthFunc(GL_LEQUAL));
-    GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));
-
-    //pyramid 
-    mMat = glm::translate(glm::mat4(1.0f), glm::vec3(pyramPosX, pyramPosY, pyramPosZ));
-    mvMat = vMat * mMat;
-
-    // copyPerspective and MV matrices to uniforms
-    Shader.setUniformMat4f("mv_matrix", mvMat);
+    Shader.setUniformMat4f("mv_matrix", mvStack.top());
     Shader.setUniformMat4f("proj_matrix", pMat);
 
     // associate VBO with vertex attribute in shader
@@ -172,8 +158,54 @@ void display(GLFWwindow* window, double currentTime, shader& Shader)
     // adjust opengl settings
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glDepthFunc(GL_LEQUAL));
-    GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));
+    GLCall(glDrawArrays(GL_TRIANGLES, 0, 18));      // draw
+    mvStack.pop();      // remove the sun's rotation from stack
 
+
+    //cube stuff
+    mvStack.push(mvStack.top());
+    mvStack.top() *= glm::translate(glm::mat4(1.0f), glm::vec3(sin((float) currentTime)* 4.0, 0.0f, cos((float)currentTime)*4.0f));
+    mvStack.push(mvStack.top());
+    mvStack.top() *= glm::rotate(glm::mat4(1.0f), (float)currentTime, glm::vec3(0.0f, 1.0f, 0.0f)); // "planet" rotation
+
+    Shader.setUniformMat4f("mv_matrix", mvStack.top());
+    Shader.setUniformMat4f("proj_matrix", pMat);
+
+    // associate VBO with vertex attribute in shader
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
+    GLCall(glEnableVertexAttribArray(0));
+
+    // adjust opengl settings
+    GLCall(glEnable(GL_DEPTH_TEST));
+    GLCall(glDepthFunc(GL_LEQUAL));
+    GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));      // draw planet
+    mvStack.pop();                                  // remove the planet's axial rotation
+
+    // smaller cube
+    mvStack.push(mvStack.top());
+    mvStack.top() *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, sin((float) currentTime)* 2.0, cos((float)currentTime)*2.0f));
+    mvStack.top() *= glm::rotate(glm::mat4(1.0f), (float)currentTime, glm::vec3(0.0f, 0.0f, 1.0f)); // "moon" rotation
+    mvStack.top() *= glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, 0.25f));       // make smaller
+
+    Shader.setUniformMat4f("mv_matrix", mvStack.top());
+    Shader.setUniformMat4f("proj_matrix", pMat);
+
+    // associate VBO with vertex attribute in shader
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
+    GLCall(glEnableVertexAttribArray(0));
+
+    // adjust opengl settings
+    GLCall(glEnable(GL_DEPTH_TEST));
+    GLCall(glDepthFunc(GL_LEQUAL));
+    GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));      // draw moon
+
+    // room all scales, rotations and transforms
+    mvStack.pop();
+    mvStack.pop();
+    mvStack.pop();
+    mvStack.pop();
 }
 
 int main()
