@@ -9,6 +9,10 @@
 #include <fstream>
 #include "../debug/messageDebugger.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 /**
  * @brief Abstraction of opengl shader
  * 
@@ -18,15 +22,23 @@
 class shader
 {
     private:
-        GLuint m_shader;
-        std::string m_shaderData;
-        std::filesystem::path m_filePath;
-        GLenum m_shaderType;
+        GLuint m_glProgram;
+
+        GLint getUniformLocation(const std::string& name);
     public:
-        shader(std::filesystem::path filepath, GLenum shaderType);
-        void createShader();
-        const char* shaderData();
-        GLuint getShader();
+        shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
+        GLuint getGLProgram();
+
+        void setUniform1f(const GLchar* name, float value);
+        void setUniform1fv(const GLchar* name, float* value, GLsizei count);
+        void setUniform1i(const GLchar* name, int value);
+        void setUniform1ui(const GLchar* name, unsigned int value);
+        void setUniform1iv(const GLchar* name, int* value, GLsizei count);
+        void setUniform2f(const GLchar* name, const glm::vec2& vector);
+        void setUniform3f(const GLchar* name, const glm::vec3& vector);
+        void setUniform4f(const GLchar* name, const glm::vec4& vector);
+        void setUniformMat4f(const char* name, const glm::mat4& value);
+
 
 };
 

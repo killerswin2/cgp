@@ -8,7 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "debug/messageDebugger.h"
 #include "shader/shader.h"
-#include "glProgram/glProgram.h"
 
 
 #define numVAOs 1
@@ -94,16 +93,11 @@ void setUpVertices(void)
  */
 GLuint createShaderProgram() 
 {
-    shader vShader{"shaders/vertexShaderSimple.glsl", GL_VERTEX_SHADER};
-    shader fShader{"shaders/fragmentShaderSimple.glsl", GL_FRAGMENT_SHADER};
+    shader Shader{"shaders/vertexShaderSimple.glsl", "shaders/fragmentShaderSimple.glsl"};
 
-    program glProgram;
-    glProgram.pushBackShader(vShader);
-    glProgram.pushBackShader(fShader);
-    glProgram.attachShaders();
 
-    GLuint vfProgram = glProgram.getGLProgram();
-    return vfProgram;
+
+    return Shader.getGLProgram();
 
 }
 
