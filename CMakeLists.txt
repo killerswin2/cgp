@@ -29,4 +29,4 @@ PRIVATE dependencies/SOIL2
 
 target_link_libraries(CGP glfw libglew_static glm)
 
-set_property(TARGET CGP PROPERTY CXX_STANDARD 17)
+set_target_properties(CGP PROPERTIES CXX_STANDARD 17)

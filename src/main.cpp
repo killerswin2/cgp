@@ -16,8 +16,9 @@
 
 //gl stuff
 
-float cameraX, cameraY, cameraZ;
-float cubePosX, cubePosY, cubePosZ;
+static float cameraX, cameraY, cameraZ;
+static float cubePosX, cubePosY, cubePosZ;
+static float pyramPosX, pyramPosY, pyramPosZ;
 
 GLuint renderingProgram;
 GLuint vao[numVAOs];
@@ -34,13 +35,17 @@ static double frameTimeLast = 0.0;
 
 // display helpers
 
-static GLuint vLoc, projLoc, tfLoc;
+static GLuint vLoc, projLoc, mvLoc;
 static int width, height;
 static float aspect;
-static glm::mat4 pMat, vMat, mMat;
+static glm::mat4 pMat, vMat, mMat, mvMat;
 
 
-
+/**
+ * @brief Creates and binds vertex data.
+ * 
+ * @return GLuint 
+ */
 void setUpVertices(void)
 {
     float vertexPositions[108] = {
@@ -58,12 +63,25 @@ void setUpVertices(void)
         1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, -1.0
     };
 
-    GLCall(glGenVertexArrays(1, vao));
+    float pyramidPositions[54] =
+    {
+        -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f
+    };
+
+    GLCall(glGenVertexArrays(numVAOs, vao));
     GLCall(glBindVertexArray(vao[0]));
     GLCall(glGenBuffers(numVBOs, vbo));
 
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
     GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW));
+
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[1]));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidPositions), pyramidPositions, GL_STATIC_DRAW));
 
 }
 
@@ -102,11 +120,15 @@ void init(GLFWwindow* window)
     renderingProgram = createShaderProgram();
     cameraX = 0.0f;
     cameraY = 0.0f;
-    cameraZ = 1000.0f;
+    cameraZ = 10.0f;
 
     cubePosX = 0.0f;
     cubePosY = -2.0f;
     cubePosZ = 0.0f;
+
+    pyramPosX = 0.0f;
+    pyramPosY = 2.0f;
+    pyramPosZ = 0.0f;
     setUpVertices();
 
 };
@@ -132,8 +154,7 @@ void display(GLFWwindow* window, double currentTime)
     GLCall(glUseProgram(renderingProgram));
 
     // get uniform locations
-    GLCall(tfLoc = glGetUniformLocation(renderingProgram, "timeFactor"));
-    GLCall(vLoc = glGetUniformLocation(renderingProgram, "v_matrix"));
+    GLCall(mvLoc = glGetUniformLocation(renderingProgram, "mv_matrix"));
     GLCall(projLoc = glGetUniformLocation(renderingProgram, "proj_matrix"));
 
     //build perspective matrix
@@ -145,20 +166,39 @@ void display(GLFWwindow* window, double currentTime)
     // model, view and model-view matrix
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
     mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubePosX, cubePosY, cubePosZ));
+    mvMat = vMat * mMat;
 
-    float timeFactor = (float)currentTime;
     // copyPerspective and MV matrices to uniforms
-    GLCall(glUniform1f(tfLoc, (float)timeFactor));
-    GLCall(glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(vMat)));
+    GLCall(glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat)));
     GLCall(glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat)));
+
     // associate VBO with vertex attribute in shader
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
     GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
     GLCall(glEnableVertexAttribArray(0));
+
     // adjust opengl settings
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glDepthFunc(GL_LEQUAL));
-    GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 100000));
+    GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));
+
+    //pyramid 
+    mMat = glm::translate(glm::mat4(1.0f), glm::vec3(pyramPosX, pyramPosY, pyramPosZ));
+    mvMat = vMat * mMat;
+
+     // copyPerspective and MV matrices to uniforms
+    GLCall(glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat)));
+    GLCall(glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat)));
+
+    // associate VBO with vertex attribute in shader
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[1]));
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
+    GLCall(glEnableVertexAttribArray(0));
+
+    // adjust opengl settings
+    GLCall(glEnable(GL_DEPTH_TEST));
+    GLCall(glDepthFunc(GL_LEQUAL));
+    GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));
 
 }
 
