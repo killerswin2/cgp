@@ -98,9 +98,21 @@ shader::shader(const std::filesystem::path& vertexPath, const std::filesystem::p
     GLCall(glDeleteShader(fragmentShader));
 }
 
-GLuint shader::getGLProgram()
+GLuint shader::getGLProgram() 
 {
     return m_glProgram;
+}
+
+void shader::useProgram() 
+{
+    GLCall(glUseProgram(m_glProgram));
+}
+
+GLint shader::getUniformLocation(const GLchar* name)
+{
+    GLint loc;
+    GLCall(loc = glGetUniformLocation(m_glProgram, name));
+    return loc;
 }
 
 void shader::setUniform1f(const GLchar* name, float value) {}
@@ -119,4 +131,7 @@ void shader::setUniform3f(const GLchar* name, const glm::vec3& vector) {}
 
 void shader::setUniform4f(const GLchar* name, const glm::vec4& vector) {}
 
-void shader::setUniformMat4f(const char* name, const glm::mat4& value) {}
+void shader::setUniformMat4f(const char* name, const glm::mat4& value) 
+{
+        GLCall(glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value)));
+}

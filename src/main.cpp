@@ -19,7 +19,6 @@ static float cameraX, cameraY, cameraZ;
 static float cubePosX, cubePosY, cubePosZ;
 static float pyramPosX, pyramPosY, pyramPosZ;
 
-GLuint renderingProgram;
 GLuint vao[numVAOs];
 GLuint vbo[numVBOs];
 
@@ -34,7 +33,6 @@ static double frameTimeLast = 0.0;
 
 // display helpers
 
-static GLuint vLoc, projLoc, mvLoc;
 static int width, height;
 static float aspect;
 static glm::mat4 pMat, vMat, mMat, mvMat;
@@ -85,22 +83,6 @@ void setUpVertices(void)
 }
 
 
-
-/**
- * @brief Create a Shader Program object
- * 
- * @return GLuint 
- */
-GLuint createShaderProgram() 
-{
-    shader Shader{"shaders/vertexShaderSimple.glsl", "shaders/fragmentShaderSimple.glsl"};
-
-
-
-    return Shader.getGLProgram();
-
-}
-
 /**
  * @brief opengl "init" function
  * 
@@ -111,7 +93,6 @@ GLuint createShaderProgram()
  */
 void init(GLFWwindow* window) 
 {
-    renderingProgram = createShaderProgram();
     cameraX = 0.0f;
     cameraY = 0.0f;
     cameraZ = 10.0f;
@@ -135,21 +116,19 @@ void init(GLFWwindow* window)
  * @param window glfw window with opengl context
  * @param currentTime time since window init
  */
-void display(GLFWwindow* window, double currentTime)
+void display(GLFWwindow* window, double currentTime, shader& Shader)
 {
+    GLuint renderingProgram = Shader.getGLProgram();
     // calculate deltaTime;
-
     double deltaTime = currentTime - frameTimeLast;     // (final - init)
     frameTimeLast = currentTime;
 
 
     GLCall(glClear(GL_DEPTH_BUFFER_BIT));
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
-    GLCall(glUseProgram(renderingProgram));
+    Shader.useProgram();
 
-    // get uniform locations
-    GLCall(mvLoc = glGetUniformLocation(renderingProgram, "mv_matrix"));
-    GLCall(projLoc = glGetUniformLocation(renderingProgram, "proj_matrix"));
+
 
     //build perspective matrix
     glfwGetFramebufferSize(window, &height, &width);
@@ -163,8 +142,9 @@ void display(GLFWwindow* window, double currentTime)
     mvMat = vMat * mMat;
 
     // copyPerspective and MV matrices to uniforms
-    GLCall(glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat)));
-    GLCall(glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat)));
+    Shader.setUniformMat4f("mv_matrix", mvMat);
+    Shader.setUniformMat4f("proj_matrix", pMat);
+
 
     // associate VBO with vertex attribute in shader
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[0]));
@@ -180,9 +160,9 @@ void display(GLFWwindow* window, double currentTime)
     mMat = glm::translate(glm::mat4(1.0f), glm::vec3(pyramPosX, pyramPosY, pyramPosZ));
     mvMat = vMat * mMat;
 
-     // copyPerspective and MV matrices to uniforms
-    GLCall(glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat)));
-    GLCall(glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat)));
+    // copyPerspective and MV matrices to uniforms
+    Shader.setUniformMat4f("mv_matrix", mvMat);
+    Shader.setUniformMat4f("proj_matrix", pMat);
 
     // associate VBO with vertex attribute in shader
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo[1]));
@@ -223,10 +203,14 @@ int main()
 
     init(window);
 
+    // shader thing.
+    shader Shader{"shaders/vertexShaderSimple.glsl", "shaders/fragmentShaderSimple.glsl"};
+
+
     // handle exit code
     while(!glfwWindowShouldClose(window)) 
     {
-        display(window, glfwGetTime());
+        display(window, glfwGetTime(), Shader);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
