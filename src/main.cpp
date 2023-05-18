@@ -136,7 +136,7 @@ void display(GLFWwindow* window, double currentTime, shader& Shader)
     double deltaTime = currentTime - frameTimeLast;     // (final - init)
     frameTimeLast = currentTime;
 
-
+    GLCall(glEnable(GL_CULL_FACE));
     GLCall(glClear(GL_DEPTH_BUFFER_BIT));
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
     Shader.useProgram();
@@ -164,6 +164,7 @@ void display(GLFWwindow* window, double currentTime, shader& Shader)
     // adjust opengl settings
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glDepthFunc(GL_LEQUAL));
+    GLCall(glFrontFace(GL_CCW));
     GLCall(glDrawArrays(GL_TRIANGLES, 0, 18));      // draw
     mvStack.pop();      // remove the sun's rotation from stack
 
@@ -185,6 +186,7 @@ void display(GLFWwindow* window, double currentTime, shader& Shader)
     // adjust opengl settings
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glDepthFunc(GL_LEQUAL));
+    GLCall(glFrontFace(GL_CW));
     GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));      // draw planet
     mvStack.pop();                                  // remove the planet's axial rotation
 
@@ -205,6 +207,7 @@ void display(GLFWwindow* window, double currentTime, shader& Shader)
     // adjust opengl settings
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glDepthFunc(GL_LEQUAL));
+    GLCall(glFrontFace(GL_CW));
     GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));      // draw moon
 
     // room all scales, rotations and transforms
