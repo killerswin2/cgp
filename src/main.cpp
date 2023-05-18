@@ -107,7 +107,20 @@ void init(GLFWwindow* window)
     pyramPosZ = 0.0f;
     setUpVertices();
 
+    //build perspective matrix
+    glfwGetFramebufferSize(window, &height, &width);
+    aspect = (float) width / (float) height;
+    pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
+
 };
+
+
+void window_reshape_callback(GLFWwindow* window, int newWidth, int newHeight)
+{
+    aspect = (float) newWidth / (float) newHeight;      // new aspect ratio
+    GLCall(glViewport(0, 0, newWidth, newHeight));      // set screen region
+    pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
+}
 
 /**
  * @brief render function
@@ -127,13 +140,6 @@ void display(GLFWwindow* window, double currentTime, shader& Shader)
     GLCall(glClear(GL_DEPTH_BUFFER_BIT));
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
     Shader.useProgram();
-
-
-    //build perspective matrix
-    glfwGetFramebufferSize(window, &height, &width);
-    aspect = (float) width / (float) height;
-    pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
-
 
     // model, view and model-view matrix
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
@@ -235,8 +241,11 @@ int main()
 
     init(window);
 
+    glfwSetWindowSizeCallback(window, window_reshape_callback);
+
     // shader thing.
     shader Shader{"shaders/vertexShaderSimple.glsl", "shaders/fragmentShaderSimple.glsl"};
+
 
 
     // handle exit code
