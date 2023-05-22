@@ -176,7 +176,9 @@ void Application::display()
     GLCall(glActiveTexture(GL_TEXTURE0));
     GLCall(glBindTexture(GL_TEXTURE_2D, m_Model.getTextureID()));
 
-
+    //mipmapping
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+    GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 
     // adjust opengl settings
     GLCall(glEnable(GL_DEPTH_TEST));
