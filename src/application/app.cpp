@@ -180,6 +180,14 @@ void Application::display()
     GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
     GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 
+    //anisotropic filtering
+    if(glewIsSupported("GL_EXT_texture_filter_anisotropic"))
+    {
+        GLfloat anisoSetting = 0.0f;
+        GLCall(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &anisoSetting));
+        GLCall(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, anisoSetting));
+    }
+
     // adjust opengl settings
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glDepthFunc(GL_LEQUAL));
