@@ -19,14 +19,15 @@
  * This class abstracts away most of the opengl shader functions needed for basic creation.
  * Creates and compiles shaders for later use with program
  */
-class shader
+class Shader
 {
     private:
         GLuint m_glProgram;
 
         GLint getUniformLocation(const std::string& name);
     public:
-        shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
+        Shader(){};
+        Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
         GLuint getGLProgram();
         void useProgram();
         GLint getUniformLocation(const GLchar* name);

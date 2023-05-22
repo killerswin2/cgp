@@ -1,7 +1,7 @@
-#include "shader.h"
+#include "Shader.h"
 
 
-shader::shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath)
+Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath)
 {
     GLuint vertexShader, fragmentShader;
     GLCall(vertexShader = glCreateShader(GL_VERTEX_SHADER));
@@ -43,7 +43,7 @@ shader::shader(const std::filesystem::path& vertexPath, const std::filesystem::p
     }
 
 
-    // set shader source and compile
+    // set Shader source and compile
     const char* vertextCharData = vertexShaderString.data();
     const char* fragmentCharData = fragmentShaderString.data();
     glShaderSource(vertexShader, 1, &vertextCharData , NULL);
@@ -98,40 +98,40 @@ shader::shader(const std::filesystem::path& vertexPath, const std::filesystem::p
     GLCall(glDeleteShader(fragmentShader));
 }
 
-GLuint shader::getGLProgram() 
+GLuint Shader::getGLProgram() 
 {
     return m_glProgram;
 }
 
-void shader::useProgram() 
+void Shader::useProgram() 
 {
     GLCall(glUseProgram(m_glProgram));
 }
 
-GLint shader::getUniformLocation(const GLchar* name)
+GLint Shader::getUniformLocation(const GLchar* name)
 {
     GLint loc;
     GLCall(loc = glGetUniformLocation(m_glProgram, name));
     return loc;
 }
 
-void shader::setUniform1f(const GLchar* name, float value) {}
+void Shader::setUniform1f(const GLchar* name, float value) {}
 
-void shader::setUniform1fv(const GLchar* name, float* value, GLsizei count) {}
+void Shader::setUniform1fv(const GLchar* name, float* value, GLsizei count) {}
 
-void shader::setUniform1i(const GLchar* name, int value) {}
+void Shader::setUniform1i(const GLchar* name, int value) {}
 
-void shader::setUniform1ui(const GLchar* name, unsigned int value) {}
+void Shader::setUniform1ui(const GLchar* name, unsigned int value) {}
 
-void shader::setUniform1iv(const GLchar* name, int* value, GLsizei count) {}
+void Shader::setUniform1iv(const GLchar* name, int* value, GLsizei count) {}
 
-void shader::setUniform2f(const GLchar* name, const glm::vec2& vector) {}
+void Shader::setUniform2f(const GLchar* name, const glm::vec2& vector) {}
 
-void shader::setUniform3f(const GLchar* name, const glm::vec3& vector) {}
+void Shader::setUniform3f(const GLchar* name, const glm::vec3& vector) {}
 
-void shader::setUniform4f(const GLchar* name, const glm::vec4& vector) {}
+void Shader::setUniform4f(const GLchar* name, const glm::vec4& vector) {}
 
-void shader::setUniformMat4f(const char* name, const glm::mat4& value) 
+void Shader::setUniformMat4f(const char* name, const glm::mat4& value) 
 {
         GLCall(glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value)));
 }
