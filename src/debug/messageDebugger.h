@@ -5,10 +5,20 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#if __linux__
+#include <unistd.h>
+#include <signal.h>
+#define ASSERT(x) if(!(x)) raise(SIGTRAP)
+#define GLCall(x) GLClearError();\
+    x;\
+    ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+#else
+
 #define ASSERT(x) if (!(x)) __debugbreak();
 #define GLCall(x) GLClearError();\
     x;\
     ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+#endif
 
 bool checkOpenGLError();
 void printProgramLog(GLuint program);
