@@ -8,16 +8,30 @@
 #if __linux__
 #include <unistd.h>
 #include <signal.h>
+#ifdef _DEBUG_BUILD
 #define ASSERT(x) if(!(x)) raise(SIGTRAP)
 #define GLCall(x) GLClearError();\
     x;\
     ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 #else
-
+#define ASSERT(x) if(!(x)) raise(SIGTRAP)
+#define GLCall(x) GLClearError();\
+    x;\
+    ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+#endif
+#else
+// windows
+#if _DEBUG
 #define ASSERT(x) if (!(x)) __debugbreak();
 #define GLCall(x) GLClearError();\
     x;\
     ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+#else
+// don't do error checking in release builds for opengl
+#define ASSERT(x) if (!(x)) __debugbreak();
+#define GLCall(x) \
+    x;
+#endif
 #endif
 
 bool checkOpenGLError();
