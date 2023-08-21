@@ -74,6 +74,10 @@ void Application::init(void)
     {
         m_Model.loadTextureFromFile(textpath.string().c_str());
     }
+
+    int textureUnits = 0;
+    GLCall(glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits));
+    std::cout << "Amount of Texture Units: " << textureUnits << "\n";
 };
 
 void Application::window_reshape_callback(GLFWwindow* window, int newWidth, int newHeight)
@@ -118,7 +122,7 @@ Application::Application()
 
 void Application::run()
 {
-        // handle exit code
+    // handle exit code
     while(!glfwWindowShouldClose(m_Window)) 
     {
         m_CurrentTime = glfwGetTime();
@@ -155,7 +159,7 @@ void Application::display()
 
     // pyramid stack
     m_MVStack.push(m_MVStack.top());
-    m_MVStack.top() *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));      // sum position
+    m_MVStack.top() *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));      // sun position
     m_MVStack.push(m_MVStack.top());
     m_MVStack.top() *= glm::rotate(glm::mat4(1.0f),float(m_CurrentTime), glm::vec3(1.0f,0.0f,0.0f));    // sun rotation
 
