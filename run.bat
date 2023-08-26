@@ -1,1 +1,1 @@
-.\build\Debug\CGP.exe
+.\out\build\Debug\CGP.exe
